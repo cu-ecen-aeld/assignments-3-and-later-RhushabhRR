@@ -121,8 +121,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
     int status;
-    printf("Cmd : %s\n", command[1]);
-    int fd = open("outputfile", O_WRONLY | O_CREAT | O_TRUNC, 0644 );
+    int fd = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644 );
 
     fflush(stdout);
     pid_t pid = fork();
