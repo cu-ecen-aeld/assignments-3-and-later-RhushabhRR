@@ -1,4 +1,11 @@
 #include "systemcalls.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+
+#include <errno.h>
+#include <string.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -16,8 +23,7 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+    return (WIFEXITED(system(cmd)));
 }
 
 /**
@@ -45,9 +51,8 @@ bool do_exec(int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
+
+    va_end(args);
 
 /*
  * TODO:
@@ -58,10 +63,35 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    int status;
 
-    va_end(args);
+    fflush(stdout);
+    pid_t pid = fork();
+    if (pid < 0)
+    {
+        printf("Error : %s\n",strerror(errno) );
+    }
 
-    return true;
+    if(pid == 0)
+    {
+        //child
+        if(execv(command[0], command) == -1)
+        {
+            printf("Command : %s\n", command[0]);
+            printf("Error : %s\n",strerror(errno) );
+            exit(EXIT_FAILURE);  
+        } 
+    }
+
+    if(pid > 0)
+    {
+        //parent
+        wait(&status);
+    }
+
+    if (WIFEXITED(status)) printf ("Child exit status : %d\n", WEXITSTATUS(status));
+
+    return (status == EXIT_SUCCESS);
 }
 
 /**
@@ -80,9 +110,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
+    va_end(args);
 
 
 /*
@@ -92,8 +120,37 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+    int status;
+    printf("Cmd : %s\n", command[1]);
+    int fd = open("outputfile", O_WRONLY | O_CREAT | O_TRUNC, 0644 );
 
-    va_end(args);
+    fflush(stdout);
+    pid_t pid = fork();
 
-    return true;
+    if(pid < 0)
+    {
+        printf("Error : %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    if(pid == 0)
+    {
+        dup2(fd,1);
+        close(fd);
+        if(execv(command[0], command) == -1)
+        {
+            printf("Error : %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if(pid > 0)
+    {
+        close(fd);
+        wait(&status);
+    }
+
+    if (WIFEXITED(status)) printf ("Child exit status : %d\n", WEXITSTATUS(status));
+    
+    return (status == EXIT_SUCCESS);
 }
