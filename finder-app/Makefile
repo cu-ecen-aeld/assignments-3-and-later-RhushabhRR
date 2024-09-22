@@ -1,17 +1,8 @@
-SOURCES := writer.c
+CC = gcc
+CFLAGS = -Werror -Wall
 
-ifeq ($(CROSS_COMPILE), aarch64-none-linux-gnu-)
-	cc = aarch64-none-linux-gnu-gcc
-	cxx = aarch64-none-linux-gnu-g++
-else
-	cc = gcc
-	cxx = g++
-endif
-
-writer: $(SOURCES)
-	$(cc) $(SOURCES) -o writer
+all:
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) writer.c -o writer
 
 clean:
-	rm -f writer
-
-
+	rm -f writer *.o
