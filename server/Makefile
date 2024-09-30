@@ -1,11 +1,11 @@
 CC = gcc
 CFLAGS = -Werror -Wall
 
-all:
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) socket.cpp -o aesdsocket
+# cc = aarch64-none-linux-gnu-gcc
+# cxx = aarch64-none-linux-gnu-g++
 
-ref:
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) ref.cpp -o aesdsocket
+all:
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) socket.c -o aesdsocket
 
 clean:
 	rm -f aesdsocket *.o
